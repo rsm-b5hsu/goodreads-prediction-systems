@@ -1,0 +1,38 @@
+Goodreads Book Review Prediction – Method Overview
+================================================
+
+RATING PREDICTION
+--------------------------
+Approach: Alternating Least Squares (ALS) with Latent Factors
+- Global bias (alpha) + user bias (betaU) + item bias (betaI) + latent factors
+- Hyperparameters (after grid search): K=10 latent dimensions for user/item embeddings' Regularization: λ_bias=2.0, λ_latent=12.0
+- 50 iterations of alternating least squares optimization
+- Predictions clipped to valid range [1, 5]
+
+
+READ PREDICTION
+------------------------
+Approach: Bayesian Personalized Ranking (BPR) with Latent Factors
+- Matrix factorization optimized for implicit feedback (read/not read)
+- K=10 latent dimensions for users and books
+- User bias + book bias + latent factor interactions
+- BPR loss: optimizes pairwise ranking (read books > unread books)
+- Hyperparameters: lr=0.08, reg=0.01, 20 iterations, 20k samples/iteration
+- Threshold calibrated on training data (45th percentile)
+- Popularity boost for cold-start items
+
+
+CATEGORY PREDICTION
+----------------------------
+Approach: TF-IDF with N-grams for Genre Classification
+
+Feature Engineering (Following Text Mining Best Practices):
+- TF-IDF vectorization: Downweights common words, upweights distinctive terms
+- Unigrams + Bigrams (ngram_range=1,2): Captures genre-specific phrases
+  (e.g., "graphic novel", "science fiction", "young adult")
+- 2500 features: Balances coverage and computational efficiency
+- Stopword removal: Filters non-discriminative words ("the", "and", "of")
+- Frequency filtering:
+  * min_df=2: Removes typos and extremely rare terms
+  * max_df=0.95: Filters overly common words across all genres
+- Text preprocessing: Lowercase, unicode normalization, alphabetic tokens only
